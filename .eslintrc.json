@@ -1,0 +1,21 @@
+{
+    "env": {
+        "node": true,
+        "es6": true
+    },
+    "extends": ["eslint:recommended"],
+    "parserOptions": {
+        "ecmaFeatures": {
+        },
+        "ecmaVersion": 2018
+    },
+    "plugins": ["prettier"],
+    "rules": {
+        "indent": "off",
+        "linebreak-style": ["error", "unix"],
+        "quotes": ["error", "double"],
+        "semi": ["error", "always"],
+        "prettier/prettier": "error",
+        "no-console": "off"
+    }
+}
