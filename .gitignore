@@ -65,3 +65,6 @@ node_modules/
 .env
 
 gCloud.json
+
+.DS_Store
+.idea/
