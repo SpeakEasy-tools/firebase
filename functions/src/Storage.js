@@ -1,14 +1,13 @@
-const {CACHE_BUCKET} = require('./constants');
+const { CACHE_BUCKET } = require("./constants");
 
-const {Storage} = require('@google-cloud/storage');
+const { Storage } = require("@google-cloud/storage");
 const storageClient = new Storage();
 
 async function checkCache(prefix) {
     const options = {
         directory: prefix,
     };
-    const [files] = await storageClient.bucket(CACHE_BUCKET)
-        .getFiles(options);
+    const [files] = await storageClient.bucket(CACHE_BUCKET).getFiles(options);
     if (files.length) {
         return files[0].name;
     } else {
@@ -17,10 +16,11 @@ async function checkCache(prefix) {
 }
 
 async function uploadToCache(filename, contents) {
-    return await storageClient.bucket(CACHE_BUCKET)
+    return await storageClient
+        .bucket(CACHE_BUCKET)
         .file(filename)
         .save(contents)
-        .then(() => filename)
+        .then(() => filename);
 }
 
 exports.checkCache = checkCache;
