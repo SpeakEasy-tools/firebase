@@ -12,7 +12,7 @@ async function getUserRoles(uid) {
     const email = await admin
         .auth()
         .getUser(uid)
-        .then((user) => user.email);
+        .then((user) => user.email.toLowerCase());
 
     if (email) {
         if (developerEmails.includes(email)) {
