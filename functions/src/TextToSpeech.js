@@ -43,7 +43,6 @@ const callSynthesize = async (targetLocal, data) => {
 const callList = () => {
     const request = {};
 
-    console.log(`Requesting voices`);
     return textToSpeechClient.listVoices(request);
 };
 
@@ -64,7 +63,6 @@ exports.synthesize = functions.https.onCall(
                 return path;
             }
         } catch (e) {
-            console.error(e);
             return e.message;
         }
     }
@@ -72,12 +70,10 @@ exports.synthesize = functions.https.onCall(
 
 exports.voices = functions.https.onCall(
     async () => {
-        console.log(`Fetching voices`);
 
         try {
             return await callList();
         } catch (e) {
-            console.error(e);
             return e.message;
         }
     }

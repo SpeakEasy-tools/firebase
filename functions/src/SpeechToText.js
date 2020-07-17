@@ -18,7 +18,6 @@ const callRecognize = (audioContent, languageCode) => {
 
 exports.recognize = functions.https.onCall(
     async (data, context) => {
-        console.log(`Recognizing speech`);
 
         try {
             const languageCode = data.languageCode;
@@ -26,7 +25,6 @@ exports.recognize = functions.https.onCall(
 
             return await callRecognize(audioContent, languageCode);
         } catch (e) {
-            console.error(e);
             return e.message;
         }
     }

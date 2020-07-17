@@ -4,3 +4,4 @@ exports.DEFAULT_GENDER = 'NEUTRAL';
 exports.CACHE_BUCKET = 'speakeasy-263714.appspot.com';
 exports.CACHE_VOICES_BUCKET = 'voices';
 exports.CACHE_TTS_BUCKET = 'tts';
+exports.API_URL = 'api.speakeasy.services'
