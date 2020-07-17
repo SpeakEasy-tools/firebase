@@ -1,9 +1,13 @@
-const uuid = require('uuid');
-const functions = require('firebase-functions');
+const uuid = require("uuid");
+const functions = require("firebase-functions");
 
-const {DEFAULT_ENCODING, DEFAULT_GENDER, CACHE_BUCKET} = require('./constants');
-const {TextToSpeechClient} = require('@google-cloud/text-to-speech');
-const {Storage} = require('@google-cloud/storage');
+const {
+    DEFAULT_ENCODING,
+    DEFAULT_GENDER,
+    CACHE_BUCKET,
+} = require("./constants");
+const { TextToSpeechClient } = require("@google-cloud/text-to-speech");
+const { Storage } = require("@google-cloud/storage");
 const textToSpeechClient = new TextToSpeechClient();
 const storageClient = new Storage();
 
@@ -11,8 +15,7 @@ async function checkCache(prefix) {
     const options = {
         directory: prefix,
     };
-    const [files] = await storageClient.bucket(CACHE_BUCKET)
-        .getFiles(options);
+    const [files] = await storageClient.bucket(CACHE_BUCKET).getFiles(options);
     if (files.length) {
         return files[0].name;
     } else {
@@ -20,22 +23,24 @@ async function checkCache(prefix) {
     }
 }
 
-const parsePath = (text, language) => `${language}/${text.split(' ').join('/')}`.toLowerCase();
+const parsePath = (text, language) =>
+    `${language}/${text.split(" ").join("/")}`.toLowerCase();
 const generateFilename = () => `${uuid.v4()}.${DEFAULT_ENCODING.toLowerCase()}`;
 
 const uploadToCache = async (path, contents) => {
     const filename = `${path}/${generateFilename()}`;
-    return await storageClient.bucket(CACHE_BUCKET)
+    return await storageClient
+        .bucket(CACHE_BUCKET)
         .file(filename)
         .save(contents)
-        .then(() => filename)
+        .then(() => filename);
 };
 
 const callSynthesize = async (targetLocal, data) => {
     const request = {
-        input: {text: data},
-        voice: {languageCode: targetLocal, ssmlGender: DEFAULT_GENDER},
-        audioConfig: {audioEncoding: DEFAULT_ENCODING}
+        input: { text: data },
+        voice: { languageCode: targetLocal, ssmlGender: DEFAULT_GENDER },
+        audioConfig: { audioEncoding: DEFAULT_ENCODING },
     };
     return await textToSpeechClient.synthesizeSpeech(request);
 };
@@ -43,38 +48,37 @@ const callSynthesize = async (targetLocal, data) => {
 const callList = () => {
     const request = {};
 
+    console.log("Requesting voices");
     return textToSpeechClient.listVoices(request);
 };
 
-exports.synthesize = functions.https.onCall(
-    async (data, context) => {
+exports.synthesize = functions.https.onCall(async (data) => {
+    try {
+        const text = data.text;
+        const language = data.languageCode;
 
-        try {
-            const text = data.text;
-            const language = data.languageCode;
+        const path = await checkCache(parsePath(text, language));
+        if (!path) {
+            const newPath = parsePath(text, language);
+            const [{ audioContent }] = await callSynthesize(language, text);
 
-            const path = await checkCache(parsePath(text, language));
-            if (!path) {
-                const newPath = parsePath(text, language);
-                const [{audioContent}] = await callSynthesize(language, text);
-
-                return await uploadToCache(newPath, audioContent);
-            } else {
-                return path;
-            }
-        } catch (e) {
-            return e.message;
+            return await uploadToCache(newPath, audioContent);
+        } else {
+            return path;
         }
+    } catch (e) {
+        console.error(e);
+        return e.message;
     }
-)
+});
 
-exports.voices = functions.https.onCall(
-    async () => {
+exports.voices = functions.https.onCall(async () => {
+    console.log("Fetching voices");
 
-        try {
-            return await callList();
-        } catch (e) {
-            return e.message;
-        }
+    try {
+        return await callList();
+    } catch (e) {
+        console.error(e);
+        return e.message;
     }
-)
+});
